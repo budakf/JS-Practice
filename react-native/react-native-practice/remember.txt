@@ -1,0 +1,15 @@
+
+expo init ProjectName
+cd ProjectName
+expo start
+expo install expo-contacts
+npm install --save react-navigation
+
+npm search react-navigation-tabs
+npm install react-native-reanimated --save
+npm install react-native-navigation --save
+npm install react-navigation-material-bottom-tabs react-native-paper
+npm install @react-navigation/material-top-tabs react-native-tab-view
+
+
+create-react-native-app contact-app
