@@ -1,23 +1,25 @@
 import {Reducer} from './Reducers'
+import {ReducerForFireBase} from './ReducerForFireBase'
 import * as firebase from 'firebase'
+
 import ignoreWarnings from 'react-native-ignore-warnings';
 ignoreWarnings('Setting a timer');
 
 const firebaseConfig = {
-    apiKey: "API_KEY",
-    authDomain: "blabla.firebaseapp.com",
-    databaseURL: "https://blabla.firebaseio.com",
-    projectId: "blabla",
-    storageBucket: "blabla.appspot.com",
-    appId: "APP_ID",
+    apiKey: "",
+    authDomain: "",
+    databaseURL: "",
+    projectId: "",
+    storageBucket: "",
+    appId: "",
 };
-  
+
 firebase.initializeApp(firebaseConfig);
 
 
 class Store{
 
-    constructor(reducer, state){
+    constructor(reducerForFireBase, reducer, state){
 
         if(!!Store.instance){
             return Store.instance
@@ -25,6 +27,7 @@ class Store{
 
         Store.instance = this
         this.reducer = reducer
+        this.reducerForFireBase = reducerForFireBase
         this.state = state
         this.subscribers = new Set()
 
@@ -52,43 +55,33 @@ class Store{
         this.subscribers.delete(callback)
     }
 
-    dispatch(action){
+    reduce(action){
         this.state = this.reducer( this.state, action )
-        this.subscribers.forEach( callback => callback() )
-        if(action.type === 'ADD_TODO')
-            this.sendDataToFireBase(action)
-        else if(action.type === 'DELETE_TODO')
-            this.deleteDataFromFireBase(action)
+        this.reducerForFireBase( action )
     }
 
-    sendDataToFireBase(action){
-        firebase.database().ref('todos/' + action.id ).set({
-            id: action.id,
-            text: action.payload
-        });
+    dispatch(action){
+        this.reduce( action )
+        this.subscribers.forEach( callback => callback() )
     }
 
     receiveDataFireBase(){
         firebase.database().ref('todos/').on('value', (todos) => {
-
+    
             let result = []
-        
-            for (let [key, value] of Object.entries(todos.val() )) {
-                result.push({ id: key, text: value.text})
-            }
 
+            for (let [key, value] of Object.entries(todos.val() )) {
+                result.push({ id: key, text: value.text, completed: value.completed})
+            }
+    
             store.setTodos( result )
         
         });
     }
 
-    deleteDataFromFireBase(action){
-        firebase.database().ref('todos/' + action.id).remove()
-    }
-
 };
 
-let store = new Store( Reducer, { todos: [] } )
+let store = new Store( ReducerForFireBase, Reducer, { todos: [] } )
 store.receiveDataFireBase()
 
 

@@ -18,10 +18,14 @@ export function deleteTodo( id ){
     }
 }
 
-export function updateTodo( payload, id ){
+export function updateTodo( payload ){
     return{
         type: UPDATE_TODO,
-        payload
+        id : payload.id,
+        payload: {
+            text: payload.text, 
+            completed: payload.completed,
+        }
     }
 }
 
