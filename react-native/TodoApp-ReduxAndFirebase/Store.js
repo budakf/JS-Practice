@@ -21,7 +21,7 @@ class Store{
 
     constructor(reducerForFireBase, reducer, state){
 
-        if(!!Store.instance){
+        if(Store.instance){
             return Store.instance
         }
 

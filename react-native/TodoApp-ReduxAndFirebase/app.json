@@ -1,13 +1,12 @@
 {
   "expo": {
-    "name": "TodoApp-ReduxAndFirebase",
-    "slug": "TodoApp-ReduxAndFirebase",
+    "name": "TodoApp",
+    "slug": "todoapp",
     "platforms": [
       "ios",
-      "android",
-      "web"
+      "android"
     ],
-    "version": "1.0.0",
+    "version": "3.18.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "splash": {
@@ -15,14 +14,18 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "updates": {
-      "fallbackToCacheTimeout": 0
-    },
     "assetBundlePatterns": [
-      "**/*"
+      "assets/*"
     ],
     "ios": {
       "supportsTablet": true
+    },
+    "description": "Todoapp with custom redux implementation and firebase integration",
+    "sdkVersion": "37.0.0",
+    "android": {
+      "package": "com.budakf.TodoApp",
+      "versionCode": 1,
+      "permissions": []
     }
   }
 }
