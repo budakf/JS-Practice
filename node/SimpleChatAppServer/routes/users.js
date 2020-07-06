@@ -38,24 +38,16 @@ router.get('/:email', async function(req, res, next) {
 });
 
 
-router.post('/addUser', async function(req, res, next) {
+router.post('/add', async function(req, res, next) {
     try{
-        const user = {
-            username : "username",
-            "registrationDate":{
-                "_seconds":1592686434,
-                "_nanoseconds":0
-            },
-            name: "John",
-            surname: "Doe",
-        }
+        console.log(req.body)
+        console.log(req.body.user)
+        const user = req.body.user
         await firebaseDB.addUserToDB(user)
         res.json({success:"Success"})
-
     }
     catch(error){
         res.json({error:"Error"})
-
     }
 
 });

@@ -1,10 +1,14 @@
 const admin = require('firebase-admin')
-
+const firebase = require('firebase')
 const serviceAccount = require('./service-account-key.json')
-const fs = require('fs')
 
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
+    databaseURL: ""
+})
+
+firebase.initializeApp({
+    apiKey: '',
     databaseURL: ""
 })
 
@@ -38,15 +42,13 @@ const getUser = async (username) => {
 const addUserToDB = async (user) => {
 
     try{ 
-        console.log(user)
         let users = db.collection('users')
-        users.doc(user.username).set({
+        users.doc(user.email).set({
             "name": user.name, 
-            "registrationDate":{ 
-                "_seconds":1592686800,
-                "_nanoseconds":0
-            },
-            "surname":user.surname
+            "uid": user.uid,
+            "email": user.email,
+            "surname": user.surname,
+            "friends":[],
         })
 
     }
@@ -76,10 +78,10 @@ const createUserForAuth = async (user) => {
 }
 
 
-
 exports.getUsers = getUsers;
 exports.getUser = getUser;
 exports.addUserToDB = addUserToDB;
 exports.createUserForAuth = createUserForAuth;
+exports.firebase = firebase;
 
 
