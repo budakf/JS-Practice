@@ -14,21 +14,13 @@ export default class  UsersListScreen extends React.Component{
         super(props)
 
         this.state = {
-            email: '',
             uid: '',
-            fontLoaded: false,
         }
 
     }
 
     async UNSAFE_componentWillMount() {
-        await Font.loadAsync({
-          'DancingScript': require('../assets/fonts/DancingScript-VariableFont_wght.ttf')
-        });
-        this.setState({ fontLoaded: true })
-
-        this.getUsers()
-
+        await this.getUsers()
     }
 
     static navigationOptions = ({ navigation }) => {
@@ -39,15 +31,14 @@ export default class  UsersListScreen extends React.Component{
             },
             headerTintColor: 'white',
             headerRight: () => ( 
-                <MaterialIcons name="exit-to-app" color="white" size={35}  onPress={() => console.log("Quit") } /> 
+                <MaterialIcons name="exit-to-app" color="white" size={35}  onPress={ () => navigation.state.params.signOut() } /> 
             )
         }
     }
 
     componentDidMount = () => {
-        AsyncStorage.setItem( 'loginState', 'login' )
-        this.setState( { email: auth.currentUser?.email }, async () => { await AsyncStorage.setItem( 'email', auth.currentUser?.email ) } )
         this.setState( { uid: auth.currentUser?.uid }, async () => { await AsyncStorage.setItem( 'email', auth.currentUser?.uid ) } )
+        this.props.navigation.setParams({ signOut: () => this.signOut() })
     }
 
     getUsers = async () => {
@@ -81,19 +72,11 @@ export default class  UsersListScreen extends React.Component{
     )
 
     signOut = async () => {
-        Toast.show('Logout Successfully', Toast.LONG)
-        this.props.navigation.navigate('LoginScreen')
-        await AsyncStorage.setItem( 'loginState', 'logout' )
-        await AsyncStorage.setItem( 'email', '' )
-        await AsyncStorage.setItem( 'uid', '' )
-    } 
-
-    quitApp = async () => {
         try{
-            auth.signOut().then( () => this.signOut() ).catch(function(error) {
-                console.log(error)
-            });
-
+            auth.signOut().then( () => console.log("success") ).catch( (error) => console.log(`${error}`) );
+            await AsyncStorage.setItem( 'uid', '' )
+            this.props.navigation.navigate('LoginScreen')
+            Toast.show('Logout Successfully', Toast.LONG)
          }
          catch(error){
              Toast.show("Logout error", Toast.LONG)

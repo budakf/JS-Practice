@@ -1,9 +1,9 @@
 import React from 'react';
 import { StyleSheet, Text, View, TextInput, StatusBar, TouchableHighlight, Keyboard, Dimensions, Image } from 'react-native';
-import * as Font from 'expo-font'
 import Toast from 'react-native-simple-toast';
+import {auth} from '../FirebaseAuthentication';
+import * as Font from 'expo-font';
 
-import {auth} from '../FirebaseAuthentication'
 
 export default class  SignupScreen extends React.Component{
 
@@ -12,6 +12,8 @@ export default class  SignupScreen extends React.Component{
 
         this.state = {
             email: "",
+            name:"",
+            surname:"",
             password: "",
             repassword: "",
             disabled: true,
@@ -46,6 +48,14 @@ export default class  SignupScreen extends React.Component{
         this.setState( { email } , this.shoudEnabledButton)
     }
 
+    nameHandler = name => {
+        this.setState( { name } , this.shoudEnabledButton)
+    }
+
+    surnameHandler = surname => {
+        this.setState( { surname } , this.shoudEnabledButton)
+    }
+
     passwordHandler = password => {
         this.setState( {password} , this.shoudEnabledButton)
     }    
@@ -55,7 +65,7 @@ export default class  SignupScreen extends React.Component{
     }
 
     shoudEnabledButton = () => {
-        if( this.state.email !== "" && this.state.password !== "" &&
+        if( this.state.email !== "" && this.state.password !== "" && this.state.name !== "" && this.state.surname !== "" &&
             this.state.repassword !== "" && this.state.password === this.state.repassword ){
             this.changeButtonColorAndEnable(false)
         }else{
@@ -69,13 +79,28 @@ export default class  SignupScreen extends React.Component{
 
     signUp = async () => {
         Keyboard.dismiss()
-        try{ 
+        try{
             const userData = await auth.createUserWithEmailAndPassword(this.state.email, this.state.password)
-            Toast.show('Login Successful', Toast.LONG)
+            fetch(`http://192.168.1.24:4040/users/add`, {  //       
+                method: 'POST',
+                headers:{ 
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify( {
+                    user:{
+                        "name": this.state.name, 
+                        "uid": userData.user.uid,
+                        "email": this.state.email,
+                        "surname": this.state.surname,
+                    }
+                })
+            })
+            console.log(this.state.email)
+            Toast.show('SignUp Successful', Toast.LONG)
             this.props.navigation.navigate('LoginScreen')
         }
         catch(error){
-            Toast.show("SignUp error", Toast.LONG)
+            Toast.show(`SignUp error${error}`, Toast.LONG)
         }
     }
 
@@ -97,6 +122,16 @@ export default class  SignupScreen extends React.Component{
                     autoCapitalize='none'
                     placeholder='email'
                     onChangeText={ this.emailHandler } 
+                />
+                <TextInput text={this.state.name} style={styles.input}
+                    autoCapitalize='none'
+                    placeholder='name'
+                    onChangeText={ this.nameHandler } 
+                />
+                <TextInput text={this.state.surname} style={styles.input}
+                    autoCapitalize='none'
+                    placeholder='surname'
+                    onChangeText={ this.surnameHandler } 
                 />
                 <TextInput  text={this.state.password} style={styles.input }
                     secureTextEntry

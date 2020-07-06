@@ -3,64 +3,106 @@ import { StyleSheet, Text, View, TextInput, KeyboardAvoidingView, FlatList, Keyb
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons'
 import MessageBubble from "./MessageBubble"
 import { ImageBackground } from 'react-native';
-
+import firebase, {auth} from '../FirebaseAuthentication'
+import ignoreWarnings from 'react-native-ignore-warnings';
+ignoreWarnings('Setting a timer');
 
 export default class  ChatScreen extends React.Component{
 
     constructor(props){
         super(props)
         this.state = {
-            messages: [ 
-                {content:"Fatih Deneme Message1", isMine:true},
-                {content:"Fatih Deneme Message2", isMine:false},
-                {content:"Fatih Deneme Message3", isMine:true},
-                {content:"Fatih1", isMine:true},
-                {content:"Fatih Deneme Message4", isMine:false},
-                {content:"Fatih2", isMine:true},
-                {content:"Fatih3", isMine:false},
-            ],
+            messages: [],
             newMessage: ""
         }
     }
 
+    
     static navigationOptions = ({ navigation }) => {
         return{
-            title:"",
+            title:navigation.getParam('friendName',''),
             headerStyle:{
                 backgroundColor: '#0F4B73',
             },
             headerTintColor: 'white',
+            headerRight: () => ( 
+                <View style={{ width: 70, marginRight: 10, flexDirection:'row', justifyContent:"space-between" }} > 
+                    <MaterialIcons name="videocam" color="white" size={25}  onPress={() => navigation.push("VideoCallScreen") } /> 
+                    <MaterialIcons name="phone" color="white" size={25}  onPress={() => navigation.push("VoiceCallScreen") } />                 
+                </View> 
+            ),
         }
     }
 
-    newMessageHandler = (newMessage) => {
+
+    UNSAFE_componentWillMount = async () => {
+
+        const messageDBId = auth.currentUser.uid < this.props.navigation.getParam('friendUid','') ? 
+                        auth.currentUser.uid  + '-' + this.props.navigation.getParam('friendUid','') :
+                        this.props.navigation.getParam('friendUid','') + '-' + auth.currentUser.uid
+
+        console.log("messageDBId: ", messageDBId)
+
+        await firebase.database().ref('messages/' + messageDBId).on('value', (messages) => {
+            let result = []
+            for (let [key, value] of (Object.entries(messages.val() || []) )){
+                result.push({ id: key, from: value.from, to: value.to, content: value.content, shown: value.shown })
+            }
+            this.setState( { messages : result })        
+        });
+        
+    }
+
+
+    newMessageHandler = newMessage => {
         this.setState({newMessage})
     }
 
-    sendnewMessage = () => {
+
+    sendNewMessageToServer = async (message) => {
+        const result = await fetch(`http://192.168.1.24:4040/message/send`, { 
+            method: 'POST',
+            headers:{ 
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ message }) // body data type must match "Content-Type" header
+        })
+    }
+
+
+    sendNewMessage = () => {
         if(this.state.newMessage !== ""){
+
+            const messageDBId = auth.currentUser.uid < this.props.navigation.getParam('friendUid','') ? 
+                            auth.currentUser.uid  + '-' + this.props.navigation.getParam('friendUid','') :
+                            this.props.navigation.getParam('friendUid','') + '-' + auth.currentUser.uid
+
+            this.sendNewMessageToServer({
+                messageDBId: messageDBId,
+                from: auth.currentUser?.email,
+                to: this.props.navigation.getParam('friendEmail',''),
+                content: this.state.newMessage
+            })
             this.setState(
                 {
-                    messages:[...this.state.messages, { content: this.state.newMessage, isMine: true }],
-                    newMessage:""
+                    newMessage:"",
                 }
             )
             this.textInput.clear()
             Keyboard.dismiss()
         }
-        
     }
 
-    render(){
 
+    render(){
         return(
             <View style={styles.container}>
                 <ImageBackground source={require('../assets/background.jpg')} style={styles.backgroundImage} >
                     <FlatList
                         style={styles.flatList}
                         data={this.state.messages}
-                        renderItem= {({item}) => <MessageBubble text={item.content} mine={item.isMine} />  }
-                        keyExtractor={item => item.content}
+                        renderItem= {({item}) => <MessageBubble text={item?.content} mine={item?.from === auth.currentUser.email} />  }
+                        keyExtractor={item => item?.id}
                     />
                     <KeyboardAvoidingView style={styles.keyboardAvoidingView} >
                         <TextInput
@@ -72,7 +114,7 @@ export default class  ChatScreen extends React.Component{
                             adjustResize='windowSoftInputMode'
                             onChangeText={ this.newMessageHandler } 
                         />
-                        <MaterialIcons  name="send" color="#0F4B73" size={35}  onPress={() => this.sendnewMessage() } /> 
+                        <MaterialIcons  name="send" color="#0F4B73" size={35}  onPress={() => this.sendNewMessage() } /> 
                     </KeyboardAvoidingView>
                 </ImageBackground>
             </View>
@@ -98,7 +140,6 @@ const styles = StyleSheet.create({
         marginTop:10,
     },
     keyboardAvoidingView:{
-        // backgroundColor:"red", 
         flexDirection: "row", 
         marginBottom: 10, 
         alignItems:"center",

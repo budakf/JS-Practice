@@ -11,6 +11,8 @@ import FriendListScreen from './Screens/FriendListScreen'
 import UsersListScreen from './Screens/UsersListScreen'
 import ConnectionScreen from './Screens/ConnectionScreen'
 import ChatScreen from './Screens/ChatScreen'
+import VoiceCallScreen from './Screens/VoiceCallScreen'
+import VideoCallScreen from './Screens/VideoCallScreen'
 
 const AuthenticationStack = createStackNavigator(
     {
@@ -38,6 +40,12 @@ const FriendsAndChatStack = createStackNavigator(
         ChatScreen:{
             screen: ChatScreen,
         },
+        VoiceCallScreen:{
+            screen: VoiceCallScreen,
+        },
+        VideoCallScreen:{
+            screen: VideoCallScreen,
+        },
     },
     {
         initialRouteName: "FriendListScreen",
@@ -47,10 +55,10 @@ const FriendsAndChatStack = createStackNavigator(
 FriendsAndChatStack.navigationOptions = ({ navigation }) => {
     const { routeName } = navigation.state.routes[navigation.state.index];
     let tabBarVisible = true
-    if (routeName === 'ChatScreen'){
-      tabBarVisible = false;
-    }else{
+    if (routeName === 'FriendListScreen'){
       tabBarVisible = true;
+    }else{
+      tabBarVisible = false;
     }
     return {
       tabBarVisible, 
@@ -128,8 +136,8 @@ const AppEntranceNavigator = createSwitchNavigator(
         },
     },
     {
-        initialRouteName: "AppScreensNavigator" 
-        // initialRouteName: AsyncStorage.getItem('loginState') === "login" ? "AppScreensNavigator" : "AuthenticationStack"
+        // initialRouteName: "AppScreensNavigator" 
+        initialRouteName: AsyncStorage.getItem('loginState') === "login" ? "AppScreensNavigator" : "AuthenticationStack"
     },
 );
 

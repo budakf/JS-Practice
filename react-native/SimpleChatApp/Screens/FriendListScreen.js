@@ -14,22 +14,15 @@ export default class  FriendListScreen extends React.Component{
         super(props)
 
         this.state = {
-            email: '',
-            uid: '',
-            fontLoaded: false,
             friends: []
         }
 
     }
 
     async UNSAFE_componentWillMount() {
-        await Font.loadAsync({
-          'DancingScript': require('../assets/fonts/DancingScript-VariableFont_wght.ttf')
-        });
-        this.setState({ fontLoaded: true })
-
-        this.getFriends()
-
+        console.log("WILL GET Friends")
+        await this.getFriends()
+        console.log("GOT Friends")
     } 
 
     static navigationOptions = ({ navigation }) => {
@@ -40,20 +33,19 @@ export default class  FriendListScreen extends React.Component{
             },
             headerTintColor: 'white',
             headerRight: () => ( 
-                <MaterialIcons name="exit-to-app" color="white" size={35}  onPress={() => console.log("Quit") } /> 
-            )
+                <MaterialIcons name="exit-to-app" color="white" size={35}  onPress={ () => navigation.state.params.signOut() } /> 
+            ),
         }
     }
 
     componentDidMount = async () => {
-        AsyncStorage.setItem( 'loginState', 'login' )
-        this.setState( { email: auth.currentUser?.email }, async () => { await AsyncStorage.setItem( 'email', auth.currentUser?.email ) } )
         this.setState( { uid: auth.currentUser?.uid }, async () => { await AsyncStorage.setItem( 'email', auth.currentUser?.uid ) } )   
+        this.props.navigation.setParams({ signOut: () => this.signOut() })
     }
 
     getFriends = async () => {
 
-        const result = await fetch(`http://192.168.1.24:4040/users/${auth.currentUser.email}`, {  //      fatihbudak7@hotmail.com
+        const result = await fetch(`http://192.168.1.24:4040/users/${auth.currentUser.email}`, {       
             method: 'GET',
             headers:{ 
                 'Content-Type': 'application/json'
@@ -69,35 +61,35 @@ export default class  FriendListScreen extends React.Component{
     renderItem = ( { item } ) => (
         <ListItem
             leftAvatar={{ source: { uri: "../assets/user.png" } }}
-            key={item.email}
+            key={item.uid}
             title={item.name}
             subtitle={item.surname}
             bottomDivider
             onPress={ () => { 
                 console.log(item.name, item.surname, item.email, item.uid) 
-                this.props.navigation.navigate("ChatScreen")
+                this.props.navigation.navigate("ChatScreen", { 
+                    friendName: item.name + " " + item.surname,
+                    friendEmail: item.email,
+                    friendUid: item.uid
+                })
             } }
         />
     )
 
     signOut = async () => {
-        Toast.show('Logout Successfully', Toast.LONG)
-        this.props.navigation.navigate('LoginScreen')
-        await AsyncStorage.setItem( 'loginState', 'logout' )
-        await AsyncStorage.setItem( 'email', '' )
-        await AsyncStorage.setItem( 'uid', '' )
-    }
-
-    quitApp = async () => {
         try{
-            auth.signOut().then( () => this.signOut() ).catch(function(error) {
-                console.log(error)
-            });
-
+            auth.signOut().then( async () => this.doSignOut() ).catch( (error) => console.log(`${error}`) );
+            
          }
          catch(error){
              Toast.show("Logout error", Toast.LONG)
          }
+    }
+
+    doSignOut = async () => {
+        await AsyncStorage.setItem( 'uid', '' )
+        this.props.navigation.navigate('LoginScreen')
+        Toast.show('Logout Successfully', Toast.LONG)
     }
 
     render(){
@@ -128,20 +120,3 @@ const styles = StyleSheet.create({
 
 });
 
-
-
-
-
-{/* <Header
-    barStyle="light-content"
-    containerStyle={{
-        backgroundColor: '#0F4B73',
-        height: 55,
-    }}
-    centerComponent={ this.state.fontLoaded && { text: 'Simple Chat App',  style: { color: 'white', marginBottom: 25, fontSize: 25, fontFamily: "DancingScript" } }}
-    rightComponent = {
-        <View style={{ marginBottom: 20 }} >
-            <MaterialIcons name="exit-to-app" color="white" size={35}  onPress={() => this.quitApp() } />
-        </View>
-    }
-/> */}

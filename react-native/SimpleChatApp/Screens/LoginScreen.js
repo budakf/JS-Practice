@@ -50,13 +50,16 @@ export default class  LoginScreen extends React.Component{
     login = async () => {
         Keyboard.dismiss()
         try{ 
-            const userData = await auth.signInWithEmailAndPassword(this.state.email, this.state.password)
-            Toast.show('Login Successful', Toast.LONG)
-            this.props.navigation.navigate('FriendListScreen')
+            auth.signInWithEmailAndPassword(this.state.email, this.state.password).then( () => this.routeAfterLogin()  ).catch( (error) => console.log(`${error}`) )
         }
         catch(error){
             Toast.show("Login error", Toast.LONG)
         }
+    }
+
+    routeAfterLogin = () => {
+        this.props.navigation.navigate('FriendListScreen')
+        Toast.show('Login Successful', Toast.LONG)
     }
 
     signUp = () => {
