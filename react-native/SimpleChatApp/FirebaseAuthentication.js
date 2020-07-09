@@ -1,8 +1,10 @@
 
-const firebase = require('firebase')
+import * as firebase from 'firebase/app';
+import 'firebase/database';
+import 'firebase/auth';
+
 firebase.initializeApp({
-    apiKey: "",
-    databaseURL: ""
+
 })
 
 export const auth = firebase.auth()

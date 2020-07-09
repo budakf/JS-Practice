@@ -25,6 +25,12 @@ export default class  LoginScreen extends React.Component{
           'DancingScript': require('../assets/fonts/DancingScript-VariableFont_wght.ttf')
         });
         this.setState({ fontLoaded: true })
+        const uid = await AsyncStorage.getItem('uid')
+
+        console.log(uid)
+        if( uid !== null ){
+            this.props.navigation.navigate("FriendListScreen")
+        }
     }
 
     emailHandler = email => {
@@ -57,8 +63,10 @@ export default class  LoginScreen extends React.Component{
         }
     }
 
-    routeAfterLogin = () => {
+    routeAfterLogin = async () => {
         this.props.navigation.navigate('FriendListScreen')
+        await AsyncStorage.setItem('uid', auth.currentUser.uid)
+        await AsyncStorage.setItem('email', auth.currentUser.email)
         Toast.show('Login Successful', Toast.LONG)
     }
 

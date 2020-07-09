@@ -39,13 +39,12 @@ export default class  FriendListScreen extends React.Component{
     }
 
     componentDidMount = async () => {
-        this.setState( { uid: auth.currentUser?.uid }, async () => { await AsyncStorage.setItem( 'email', auth.currentUser?.uid ) } )   
         this.props.navigation.setParams({ signOut: () => this.signOut() })
     }
 
     getFriends = async () => {
-
-        const result = await fetch(`http://192.168.1.24:4040/users/${auth.currentUser.email}`, {       
+        const email = await AsyncStorage.getItem('email')
+        const result = await fetch(`http://192.168.1.24:4040/users/${email}`, {       
             method: 'GET',
             headers:{ 
                 'Content-Type': 'application/json'
@@ -87,7 +86,7 @@ export default class  FriendListScreen extends React.Component{
     }
 
     doSignOut = async () => {
-        await AsyncStorage.setItem( 'uid', '' )
+        await AsyncStorage.removeItem( 'uid' )
         this.props.navigation.navigate('LoginScreen')
         Toast.show('Logout Successfully', Toast.LONG)
     }

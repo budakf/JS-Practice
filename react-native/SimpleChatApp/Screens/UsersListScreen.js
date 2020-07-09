@@ -36,8 +36,7 @@ export default class  UsersListScreen extends React.Component{
         }
     }
 
-    componentDidMount = () => {
-        this.setState( { uid: auth.currentUser?.uid }, async () => { await AsyncStorage.setItem( 'email', auth.currentUser?.uid ) } )
+    componentDidMount = async () => {
         this.props.navigation.setParams({ signOut: () => this.signOut() })
     }
 
@@ -74,7 +73,7 @@ export default class  UsersListScreen extends React.Component{
     signOut = async () => {
         try{
             auth.signOut().then( () => console.log("success") ).catch( (error) => console.log(`${error}`) );
-            await AsyncStorage.setItem( 'uid', '' )
+            await AsyncStorage.removeItem( 'uid' )
             this.props.navigation.navigate('LoginScreen')
             Toast.show('Logout Successfully', Toast.LONG)
          }
